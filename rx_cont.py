@@ -25,27 +25,28 @@
 from time import sleep
 from SX127x.LoRa import *
 from SX127x.LoRaArgumentParser import LoRaArgumentParser
-from SX127x.board_config import BOARD
+from SX127x.board_config_spibridge import BOARD
 
-BOARD.setup()
+b = BOARD
+b.setup()
 
 parser = LoRaArgumentParser("Continous LoRa receiver.")
 
 
 class LoRaRcvCont(LoRa):
-    def __init__(self, verbose=False):
-        super(LoRaRcvCont, self).__init__(verbose)
+    def __init__(self,b, verbose=False):
+        super(LoRaRcvCont, self).__init__(b,verbose)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
 
     def on_rx_done(self):
-        BOARD.led_on()
+        self.BOARD.led_on()
         print("\nRxDone")
         print(self.get_irq_flags())
         print(map(hex, self.read_payload(nocheck=True)))
         self.set_mode(MODE.SLEEP)
         self.reset_ptr_rx()
-        BOARD.led_off()
+        self.BOARD.led_off()
         self.set_mode(MODE.RXCONT)
 
     def on_tx_done(self):
@@ -83,7 +84,7 @@ class LoRaRcvCont(LoRa):
             sys.stdout.write("\r%d %d %d" % (rssi_value, status['rx_ongoing'], status['modem_clear']))
 
 
-lora = LoRaRcvCont(verbose=False)
+lora = LoRaRcvCont(b,verbose=False)
 args = parser.parse_args(lora)
 
 lora.set_mode(MODE.STDBY)
@@ -114,5 +115,5 @@ finally:
     print("")
     lora.set_mode(MODE.SLEEP)
     print(lora)
-    BOARD.teardown()
+    b.teardown()
 

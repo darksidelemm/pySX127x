@@ -22,7 +22,7 @@
 
 import sys
 from .constants import *
-from .board_config import BOARD
+#from .board_config_spibridge import BOARD
 
 
 ################################################## Some utility functions ##############################################
@@ -75,16 +75,19 @@ def setter(register_address):
 
 class LoRa(object):
 
-    spi = BOARD.SpiDev()              # init and get the board's SPI
+    BOARD = None
+    spi = None              
     mode = None                       # the mode is backed up here
     backup_registers = []
     verbose = True
     dio_mapping = [None] * 6          # store the dio mapping here
 
-    def __init__(self, verbose=True):
+    def __init__(self, BOARD, verbose=True):
+        self.BOARD = BOARD
+        self.spi = self.BOARD.SpiDev()
         self.verbose = verbose
         # set the callbacks for DIO0..5 IRQs.
-        BOARD.add_events(self._dio0, self._dio1, self._dio2, self._dio3, self._dio4, self._dio5)
+        self.BOARD.add_events(self._dio0, self._dio1, self._dio2, self._dio3, self._dio4, self._dio5)
         # set mode to sleep and read all registers
         self.set_mode(MODE.SLEEP)
         self.backup_registers = self.get_all_registers()
