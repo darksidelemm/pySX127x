@@ -75,7 +75,7 @@ def setter(register_address):
 
 class LoRa(object):
 
-    spi = BOARD.SpiDev()              # init and get the baord's SPI
+    spi = BOARD.SpiDev()              # init and get the board's SPI
     mode = None                       # the mode is backed up here
     backup_registers = []
     verbose = True
@@ -89,7 +89,7 @@ class LoRa(object):
         self.set_mode(MODE.SLEEP)
         self.backup_registers = self.get_all_registers()
         # more setup work:
-        self.rx_chain_calibration(968.)
+        # self.rx_chain_calibration(434.) # TODO: Find out if we need this.
         # the FSK registers are set up exactly as modtronix do it:
         lookup_fsk = [
             #[REG.FSK.LNA            , 0x23],
@@ -107,10 +107,10 @@ class LoRa(object):
             #[REG.FSK.DIO_MAPPING_1  , 0x00],
             #[REG.FSK.DIO_MAPPING_2  , 0x30]
         ]
-        self.set_mode(MODE.FSK_STDBY)
-        for register_address, value in lookup_fsk:
-            self.set_register(register_address, value)
-        self.set_mode(MODE.SLEEP)
+        #self.set_mode(MODE.FSK_STDBY)
+        #for register_address, value in lookup_fsk:
+        #    self.set_register(register_address, value)
+        #self.set_mode(MODE.SLEEP)
         # set the dio_ mapping by calling the two get_dio_mapping_* functions
         self.get_dio_mapping_1()
         self.get_dio_mapping_2()
