@@ -16,46 +16,18 @@ More information about LoRa can be found on the [LoRa Alliance website](https://
 Links to some LoRa performance reports can be found in the [references](#references) section below.
 
 
-# Motivation
+# Differences from Upstream Versions
 
-Transceiver modules are usually interfaced with microcontroller boards such as the 
-Arduino and there are already many fine C/C++ libraries for the SX127x family available on 
-[github](https://github.com/search?q=sx127x) and [mbed.org](https://developer.mbed.org/search/?q=sx127x).
-
-Although C/C++ is the de facto standard for development on microcontrollers, [python](https://www.python.org)
-running on a Raspberry Pi is becoming a viable alternative for rapid prototyping.
-
-High level programming languages like python require a full-blown OS such as Linux. (There are some exceptions like
-[PyMite](https://wiki.python.org/moin/PyMite) and most notably [MicroPython](https://micropython.org).)
-But using hardware capable of running Linux contradicts, to some extent, the low power specification of the SX127x family.
-Therefore it is clear that this approach aims mostly at prototyping and technology testing.
-
-Prototyping on a full-blown OS using high level programming languages has several clear advantages:
-* Working prototypes can be built quickly 
-* Technology testing ist faster
-* Proof of concept is easier to achieve
-* The application development phase is reached quicker 
-
+Primary difference from mayeranalytics version is I've modified the hardware interface layer to be an object passed to the LoRa library on instantiation. This makes writing portable code (hopefully) a little easier.
 
 # Hardware
 
-The transceiver module is a SX1276 based Modtronix [inAir9B](http://modtronix.com/inair9.html). 
-It is mounted on a prototyping board to a Raspberry Pi rev 2 model B.
+Currently I'm targeting:
+* PiLoraGateway RPi2 shield, from Hab Supplies.
+* Custom LoRa shields for Arduino's running some SPI-UART bridge firmware (see arduino/spibridge)
+Both of which have RFM98W modules, which have a re-branded Semtech SX1276 IC.
 
-| Proto board pin | RaspPi GPIO | Direction |
-|:----------------|:-----------:|:---------:|
-| inAir9B DIO0    | GPIO 22     |    IN     |
-| inAir9B DIO1    | GPIO 23     |    IN     |
-| inAir9B DIO2    | GPIO 24     |    IN     |
-| inAir9B DIO3    | GPIO 25     |    IN     |
-| inAir9b Reset   | GPIO ?      |    OUT    |
-| LED             | GPIO 18     |    OUT    |
-| Switch          | GPIO 4      |    IN     |
-
-Todo:
-- [ ] Add picture(s)
-- [ ] Wire the SX127x reset to a GPIO?
-
+Currently both of these shields only have DIO0 and DIO5 wired up, so the IO configuration in the LoRa module needs to be changed when switching beween TX and RX.
 
 # Code Examples
 
@@ -63,15 +35,16 @@ Todo:
 First import the modules 
 ```python
 from SX127x.LoRa import *
-from SX127x.board_config import BOARD
+# <hardwaretype> can be either piloragateway or spibridge
+from SX127x.hardware_<hardwaretype> import HardwareInterface
 ```
 then set up the board GPIOs
 ```python
-BOARD.setup()
+hw = HardwareInterface()
 ```
 The LoRa object is instantiated and put into the standby mode
 ```python
-lora = LoRa()
+lora = LoRa(hw)
 lora.set_mode(MODE.STDBY)
 ```
 Registers are queried like so:
@@ -99,7 +72,7 @@ class MyLoRa(LoRa):
 
 In the end the resources should be freed properly
 ```python
-BOARD.teardown()
+hw.teardown()
 ```
 
 ### More details
