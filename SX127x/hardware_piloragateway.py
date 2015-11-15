@@ -32,21 +32,27 @@ class HardwareInterface(object):
         Only the DIO0 and DIO5 pins are wired up
     """
     # Note that the BCOM numbering for the GPIOs is used.
-    DIO0 = 25   # RaspPi GPIO 25
-    # DIO2-4 are not exposed on the PiLoraGateway Shield
-    DIO5 = 24   # RaspPi GPIO 24 - Currently not used
-
-    LED  = 19   # RaspPi GPIO 19 connects to the Data LED on the PiLoraGateway Shield
 
     # The spi object is kept here
+    spi_device = 0
     spi = None
 
-    def __init__(self):
+    def __init__(self, device=0):
         """ Configure the Raspberry GPIOs
         :rtype : None
         """
+        self.spi_device = device
         GPIO.setmode(GPIO.BCM)
-        # LED
+        
+        if device == 0:
+            self.LED = 5
+            self.DIO0 = 25
+            self.DIO5 = 24
+        else:
+            self.LED = 21
+            self.DIO0 = 16
+            self.DIO5 = 12
+
         GPIO.setup(self.LED, GPIO.OUT)
         GPIO.output(self.LED, 0)
         # DIOx
@@ -66,7 +72,7 @@ class HardwareInterface(object):
         :rtype: SpiDev
         """
         self.spi = spidev.SpiDev()
-        self.spi.open(0, 0)
+        self.spi.open(0, self.spi_device)
         return self.spi
 
     def add_event_detect(self,dio_number, callback):
@@ -78,8 +84,9 @@ class HardwareInterface(object):
         GPIO.add_event_detect(dio_number, GPIO.RISING, callback=callback)
 
     def add_events(self,cb_dio0, cb_dio1, cb_dio2, cb_dio3, cb_dio4, cb_dio5, switch_cb=None):
-        self.add_event_detect(self.DIO0, callback=cb_dio0)
-        self.add_event_detect(self.DIO5, callback=cb_dio5)
+        return
+        #self.add_event_detect(self.DIO0, callback=cb_dio0)
+        #self.add_event_detect(self.DIO5, callback=cb_dio5)
 
     def led_on(self,value=1):
         """ Switch the proto shields LED
@@ -107,3 +114,6 @@ class HardwareInterface(object):
             time.sleep(time_sec)
             self.led_on()
         self.led_off()
+
+    def read_gpio(self):
+        return (GPIO.input(self.DIO0),GPIO.input(self.DIO5))

@@ -34,9 +34,10 @@ class SPIBridge(object):
 
 	def __init__(self, serialport="/dev/ttyUSB0",serialbaud=57600):
 		self.ser = serial.Serial(serialport, serialbaud, timeout=1)
+		print "Waiting for Arduino to boot..."
 		time.sleep(2)
 		if "SPIBridge" in self.read_version():
-			print "OK!"
+			print "Connected OK!"
 		else:
 			print "Could not connect to SPI Bridge."
 
@@ -159,6 +160,25 @@ class SPIBridge(object):
 		rx_data = self.ser.read(len(tx_data))
 		if(rx_data == tx_data):
 			return value
+
+	def read_gpio(self):
+		temp = struct.pack('>BH', self.OPCODE_READ_GPIO, 0x0000)
+		crc = self.crc16_buff(temp)
+		tx_data = struct.pack('>H3sH', self.sync, temp, crc)
+
+		if(self.ser.inWaiting()>0):
+			rx_data = self.ser.read(self.ser.inWaiting())
+			#print "Data in RX Buffer:" + ':'.join(x.encode('hex') for x in rx_data)
+		# Send!
+		self.ser.write(tx_data)
+		#print "Data in TX Buffer:" + ':'.join(x.encode('hex') for x in tx_data)
+		rx_data = self.ser.read(9)
+		#print "Data in RX Buffer:" + ':'.join(x.encode('hex') for x in rx_data)
+
+		if(ord(rx_data[2])==self.OPCODE_READ_GPIO):
+			return (ord(rx_data[5]),ord(rx_data[6]))
+		else:
+			return (-1,-1)
 
 if __name__ == "__main__":
 	spi = SPIBridge()

@@ -90,3 +90,6 @@ class HardwareInterface(object):
             time.sleep(time_sec)
             self.led_on()
         self.led_off()
+
+    def read_gpio(self):
+        return self.spi.read_gpio()

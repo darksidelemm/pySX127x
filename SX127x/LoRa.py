@@ -20,9 +20,8 @@
 # <http://www.gnu.org/licenses/>.
 
 
-import sys
+import sys, struct
 from .constants import *
-#from .board_config_spibridge import BOARD
 
 
 ################################################## Some utility functions ##############################################
@@ -82,8 +81,8 @@ class LoRa(object):
     verbose = True
     dio_mapping = [None] * 6          # store the dio mapping here
 
-    def __init__(self, BOARD, verbose=True):
-        self.BOARD = BOARD
+    def __init__(self, hw_interface, verbose=True):
+        self.BOARD = hw_interface
         self.spi = self.BOARD.SpiDev()
         self.verbose = verbose
         # set the callbacks for DIO0..5 IRQs.
@@ -470,7 +469,7 @@ class LoRa(object):
 
     def get_pkt_snr_value(self):
         v = self.spi.xfer([REG.LORA.PKT_SNR_VALUE, 0])[1]
-        return float(256-v) / 4.
+        return struct.unpack('b',str(bytearray([v])))[0]/4.
 
     def get_pkt_rssi_value(self):
         v = self.spi.xfer([REG.LORA.PKT_RSSI_VALUE, 0])[1]
