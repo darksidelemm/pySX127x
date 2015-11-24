@@ -80,6 +80,7 @@ class LoRa(object):
     backup_registers = []
     verbose = True
     dio_mapping = [None] * 6          # store the dio mapping here
+    current_freq = 434.500
 
     def __init__(self, hw_interface, verbose=True):
         self.BOARD = hw_interface
@@ -277,6 +278,7 @@ class LoRa(object):
         mid = i // 256
         i -= mid * 256
         lsb = i
+        self.current_freq = f
         return self.spi.xfer([REG.LORA.FR_MSB | 0x80, msb, mid, lsb])
 
     def get_pa_config(self, convert_dBm=False):
@@ -473,11 +475,17 @@ class LoRa(object):
 
     def get_pkt_rssi_value(self):
         v = self.spi.xfer([REG.LORA.PKT_RSSI_VALUE, 0])[1]
-        return v - 157
+        if current_freq>525.0:
+            return v - 157
+        else:
+            return v - 164
 
     def get_rssi_value(self):
         v = self.spi.xfer([REG.LORA.RSSI_VALUE, 0])[1]
-        return v - 157
+        if current_freq>525.0:
+            return v - 157
+        else:
+            return v - 164
 
     def get_hop_channel(self):
         v = self.spi.xfer([REG.LORA.HOP_CHANNEL, 0])[1]
