@@ -475,14 +475,14 @@ class LoRa(object):
 
     def get_pkt_rssi_value(self):
         v = self.spi.xfer([REG.LORA.PKT_RSSI_VALUE, 0])[1]
-        if current_freq>525.0:
+        if self.current_freq>525.0:
             return v - 157
         else:
             return v - 164
 
     def get_rssi_value(self):
         v = self.spi.xfer([REG.LORA.RSSI_VALUE, 0])[1]
-        if current_freq>525.0:
+        if self.current_freq>525.0:
             return v - 157
         else:
             return v - 164
