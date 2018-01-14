@@ -36,6 +36,7 @@ class HardwareInterface(object):
     # The spi object is kept here
     spi_device = 0
     spi = None
+    spi_speed = 1000000
 
     def __init__(self, device=0):
         """ Configure the Raspberry GPIOs
@@ -73,6 +74,7 @@ class HardwareInterface(object):
         """
         self.spi = spidev.SpiDev()
         self.spi.open(0, self.spi_device)
+        self.spi.max_speed_hz = self.spi_speed
         return self.spi
 
     def add_event_detect(self,dio_number, callback):
